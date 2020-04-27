@@ -9,13 +9,15 @@
   <body>
     <h1>Tetris</h1>
     <p>The classic Tetris game! Play it using your arrow keys to move the blocks and the SPACE bar to rotate them. </p>
-
+    <p id="LevelP">Use the bar below to select difficulty level. Current level: 1</p>
+    <input type="range" id="slider" min=1 max=25 value=1>
     <div class="buttonscontainer">
-      <button onclick="window.location.href='game.html'">Play now!</button>
+      <button id="play">Play now!</button>
     </div>
 
     <p id="myGithub">
       Also, read my code if you want: <a href="https://github.com/Angel-IG/Tetris" target="_blank">click here</a>
     </p>
+    <script src="index.js"></script>
   </body>
 </html>
