@@ -1,0 +1,56 @@
+body {
+  background-color: #39cce6;
+}
+
+p {
+  margin: 0px;
+  border: 5px solid #a415fb;
+  padding: 30px;
+  color: #fff;
+  font-size: 30px;
+  font-family: "Arial Black";
+  background-color: #ffa100;
+}
+
+a {
+  color: #004c7d;
+}
+
+#myGithub {
+  text-align: center;
+}
+
+h1 {
+  margin: 0px auto;
+  padding: 25px;
+  text-align: center;
+  color: #fff;
+  font-size: 50px;
+  font-family: "Arial Black";
+  background-color: #1618ff;
+}
+
+.buttonscontainer {
+  text-align: center;
+}
+
+button {
+  margin: 20px;
+  border-color: #a415fb;
+  padding: 20px;
+  background-color: #9a74d5;
+  font-size: 30px;
+  color: #fff;
+  font-family: "Arial Black";
+}
+
+button:hover {
+  border-color: #200434;
+  background-color: #a415fb;
+}
+
+canvas {
+  background: #000;
+  display: block;
+  margin: 0 auto;
+}
