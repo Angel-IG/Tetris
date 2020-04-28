@@ -9,21 +9,24 @@ let level = parseInt((new URLSearchParams(window.location.search)).get("level"))
 
 let stackedTiles = (function() {
   result = [];
+  row = [];
   for (let i = 0; i < H; i++) {
     for (let j = 0; j < W; j++) {
-      result.push(0);
+      row.push(0);
     }
+    result.push([row][0]); // JS is so rare... It now works.
+    row = [];
   }
   return result;
-})(); // It's actually an array with 0s if there's no tile or the Tile object
+})(); // It's actually a 2d-array with 0s if there's no tile or the Tile object
 // if there is some in that location. There're all 0s at the beginning.
 
-function validCoord(tile) {
-  return !(tile.x < 0 || tile.x > W || tile.y < 0 || tile.y > H);
+function validCoord(tileArr) {
+  return !(tileArr[0] < 0 || tileArr[0] > W || tileArr[1] < 0 || tileArr[1] > H);
 }
 
 class Tile {
-  constructor(x, y, color, strokeColor = "ccc") {
+  constructor(x, y, color, strokeColor = "#555") {
     this.x = x;
     this.y = y;
     this.color = color;
@@ -52,13 +55,14 @@ class Tile {
 }
 
 class Piece {
-  constructor(X, Y, color, strokeColor = "#ccc") {
+  constructor(X, Y, color, strokeColor = "#555") {
     this.tiles = [];
     for (let i = 0; i < X.length; i++) {
       this.tiles.push(new Tile(X[i], Y[i], color, strokeColor));
     }
     this.color = color;
     this.strokeColor = strokeColor;
+    this.isBlocked = false;
   }
 
   draw() {
@@ -101,7 +105,11 @@ class Piece {
     for (let tile of newTilesArr) {
       Xs.push(tile[0]);
       Ys.push(tile[1]);
-      if (!validCoord(tile[0], tile[1]) || stackedTiles[tile[0]][tile[1]] != 0) {
+      if (!validCoord(tile[0], tile[1])) {
+        this.isBlocked = true;
+        // Add the tiles to stackedTiles
+        return false;
+      } else if (stackedTiles[tile[0]][tile[1]]) { // If that index is not 0 or undefined
         return false;
       }
     }
@@ -114,13 +122,64 @@ class Piece {
   }
 }
 
-// The following is for testing
-piece = new Piece([0, 1, 2, 1], [0, 0, 0, 1], "#FFF");
+class IShaped extends Piece {
+  constructor() {
+    super([W / 2 - 2, W / 2 - 1, W / 2, W / 2 + 1], [0, 0, 0, 0], "#00F0F0");
+    this.rotationState = 0;
+  }
+}
+
+class LShaped extends Piece {
+  constructor() {
+    super([W / 2 - 2, W / 2 - 1, W / 2, W / 2 - 2], [0, 0, 0, 1], "#0000F0");
+    this.rotationState = 0;
+  }
+}
+
+class JShaped extends Piece {
+  constructor() {
+    super([W / 2 - 2, W / 2 - 1, W / 2, W / 2], [0, 0, 0, 1], "#F0A000");
+    this.rotationState = 0;
+  }
+}
+
+class OShaped extends Piece {
+  constructor() {
+    super([W / 2 - 1, W / 2, W / 2 - 1, W / 2], [0, 0, 1, 1], "#F0F000");
+    this.rotationState = 0;
+  }
+}
+
+class ZShaped extends Piece {
+  constructor() {
+    super([W / 2 - 2, W / 2 - 1, W / 2 - 1, W / 2], [0, 0, 1, 1], "#F00000");
+    this.rotationState = 0;
+  }
+}
+
+class SShaped extends Piece {
+  constructor() {
+    super([W / 2 - 2, W / 2 - 1, W / 2 - 1, W / 2], [1, 0, 1, 0], "#00F000");
+    this.rotationState = 0;
+  }
+}
+
+class TShaped extends Piece {
+  constructor() {
+    super([W / 2 - 2, W / 2 - 1, W / 2 - 1, W / 2], [0, 0, 1, 0], "#A000F0");
+    this.rotationState = 0;
+  }
+}
+
+// All the following is for testing
+piece = new TShaped();
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Refresh canvas
   piece.draw();
+  piece.stroke();
   piece.applyGravity();
+  console.log(piece.isBlocked);
 }
 
 setInterval(draw, 300);
