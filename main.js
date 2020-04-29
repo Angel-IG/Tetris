@@ -5,7 +5,15 @@ const W = 10; // Tiles for each column
 const H = 20; // Tiles for each row
 const T = canvas.width / W; // Tile length. It's the same as 'canvas.height / H'
 
+const DOWN = 1;
+const RIGHT = 2;
+const LEFT = 3;
+
 let level = parseInt((new URLSearchParams(window.location.search)).get("level"));
+
+let currentPiece;
+
+let frameCounter = 1; // For appling gravity. Go to the 'draw' function
 
 let stackedTiles = (function() {
   result = [];
@@ -23,6 +31,23 @@ let stackedTiles = (function() {
 
 function validCoord(tileArr) {
   return !(tileArr[0] < 0 || tileArr[0] > W || tileArr[1] < 0 || tileArr[1] > H);
+}
+
+document.addEventListener("keydown", keyDownHandler, false);
+
+function keyDownHandler(e) {
+  if (currentPiece) {
+    // Maybe the following will be better with 'switch'.
+    if (e.keyCode == 32) { // SPACE
+      // Rotation
+    } else if (e.keyCode == 40) { // Down
+      currentPiece.move(DOWN);
+    } else if (e.keyCode == 39) { // Right
+      currentPiece.move(RIGHT);
+    } else if (e.keyCode == 37) { // Left
+      currentPiece.move(LEFT);
+    }
+  }
 }
 
 class Tile {
@@ -120,6 +145,50 @@ class Piece {
     }
     return true;
   }
+
+  move(direction) {
+    // The return values are the same as with 'applyGravity'.
+    let prevTilesArr = [];
+    let newTilesArr = [];
+    for (let tile of this.tiles) {
+      prevTilesArr.push(tile.toArray());
+    }
+
+    for (let tile of prevTilesArr) {
+      switch (direction) {
+        case DOWN:
+          newTilesArr.push([tile[0], tile[1] + 1]);
+          break;
+        case RIGHT:
+          newTilesArr.push([tile[0] + 1, tile[1]]);
+          break;
+        case LEFT:
+          newTilesArr.push([tile[0] - 1, tile[1]]);
+          break;
+      }
+    }
+
+    let Xs = []; // Used later
+    let Ys = []; // Used later
+
+    for (let tile of newTilesArr) {
+      Xs.push(tile[0]);
+      Ys.push(tile[1]);
+      if (!validCoord(tile[0], tile[1])) {
+        return false;
+      } else if (stackedTiles != undefined) {
+        if (stackedTiles[tile[0]][tile[1]]) {
+          return false;
+        }
+      }
+    }
+
+    this.tiles = [];
+    for (let i = 0; i < Xs.length; i++) {
+      this.tiles.push(new Tile(Xs[i], Ys[i], this.color));
+    }
+    return true;
+  }
 }
 
 class IShaped extends Piece {
@@ -172,14 +241,22 @@ class TShaped extends Piece {
 }
 
 // All the following is for testing
-piece = new TShaped();
+currentPiece = new TShaped();
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Refresh canvas
-  piece.draw();
-  piece.stroke();
-  piece.applyGravity();
-  console.log(piece.isBlocked);
+  currentPiece.draw();
+  currentPiece.stroke();
+  if (frameCounter % 50 == 0) {
+    currentPiece.applyGravity();
+    console.log(currentPiece.isBlocked);
+  }
+
+  if (frameCounter == 60) {
+    frameCounter = 1;
+  } else {
+    frameCounter++;
+  }
 }
 
-setInterval(draw, 300);
+setInterval(draw, 1000 / 60);
