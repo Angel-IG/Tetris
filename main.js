@@ -5,6 +5,8 @@ const W = 10; // Tiles for each column
 const H = 20; // Tiles for each row
 const T = canvas.width / W; // Tile length. It's the same as 'canvas.height / H'
 
+const FPS = 60;
+
 const DOWN = 1;
 const RIGHT = 2;
 const LEFT = 3;
@@ -87,7 +89,6 @@ class Piece {
     }
     this.color = color;
     this.strokeColor = strokeColor;
-    this.isBlocked = false;
   }
 
   draw() {
@@ -130,11 +131,12 @@ class Piece {
     for (let tile of newTilesArr) {
       Xs.push(tile[0]);
       Ys.push(tile[1]);
-      if (!validCoord(tile[0], tile[1])) {
-        this.isBlocked = true;
-        // Add the tiles to stackedTiles
-        return false;
-      } else if (stackedTiles[tile[0]][tile[1]]) { // If that index is not 0 or undefined
+      try {
+        if (!validCoord(tile[0], tile[1]) || stackedTiles[tile[0]][tile[1]]) {
+          this.block();
+          return false;
+        }
+      } catch (e) {
         return false;
       }
     }
@@ -174,12 +176,15 @@ class Piece {
     for (let tile of newTilesArr) {
       Xs.push(tile[0]);
       Ys.push(tile[1]);
-      if (!validCoord(tile[0], tile[1])) {
-        return false;
-      } else if (stackedTiles != undefined) {
-        if (stackedTiles[tile[0]][tile[1]]) {
+      try {
+        if (!validCoord(tile[0], tile[1]) || stackedTiles[tile[0]][tile[1]]) {
+          if (direction == DOWN) {
+            this.block();
+          }
           return false;
         }
+      } catch (e) {
+        return false;
       }
     }
 
@@ -188,6 +193,11 @@ class Piece {
       this.tiles.push(new Tile(Xs[i], Ys[i], this.color));
     }
     return true;
+  }
+
+  block() {
+    // Add the tiles to stackedTiles
+    console.log("Blocked!"); // For testing
   }
 }
 
@@ -240,23 +250,49 @@ class TShaped extends Piece {
   }
 }
 
+const randPiece = function() { // Without anonymous function it doesn't work due to hoisting and stuff
+  let randInt = Math.floor((Math.random() * 7) + 1);
+  switch (randInt) {
+    case 1:
+      return new IShaped();
+      break; // It's not necessary in this case...
+    case 2:
+      return new LShaped();
+      break; // It's not necessary in this case...
+    case 3:
+      return new JShaped();
+      break; // It's not necessary in this case...
+    case 4:
+      return new OShaped();
+      break; // It's not necessary in this case...
+    case 5:
+      return new ZShaped();
+      break; // It's not necessary in this case...
+    case 6:
+      return new SShaped();
+      break; // It's not necessary in this case...
+    case 7:
+      return new TShaped();
+      break; // It's not necessary in this case...
+  }
+}
+
+currentPiece = randPiece();
 // All the following is for testing
-currentPiece = new TShaped();
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Refresh canvas
   currentPiece.draw();
   currentPiece.stroke();
-  if (frameCounter % 50 == 0) {
+  if (frameCounter % Math.floor(FPS / Math.sqrt(level)) == 0) {
     currentPiece.applyGravity();
-    console.log(currentPiece.isBlocked);
   }
 
-  if (frameCounter == 60) {
+  if (frameCounter == 20 * FPS) {
     frameCounter = 1;
   } else {
     frameCounter++;
   }
 }
 
-setInterval(draw, 1000 / 60);
+setInterval(draw, 1000 / FPS);
