@@ -11,17 +11,53 @@ const DOWN = 1;
 const RIGHT = 2;
 const LEFT = 3;
 
+const IForm = {
+  x: [W / 2 - 2, W / 2 - 1, W / 2, W / 2 + 1],
+  y: [0, 0, 0, 0],
+};
+
+const LForm = {
+  x: [W / 2 - 2, W / 2 - 1, W / 2, W / 2 - 2],
+  y: [0, 0, 0, 1],
+};
+
+const JForm = {
+  x: [W / 2 - 2, W / 2 - 1, W / 2, W / 2],
+  y: [0, 0, 0, 1],
+};
+
+const OForm = {
+  x: [W / 2 - 1, W / 2, W / 2 - 1, W / 2],
+  y: [0, 0, 1, 1],
+};
+
+const ZForm = {
+  x: [W / 2 - 2, W / 2 - 1, W / 2 - 1, W / 2],
+  y: [0, 0, 1, 1],
+};
+
+const SForm = {
+  x: [W / 2 - 2, W / 2 - 1, W / 2 - 1, W / 2],
+  y: [1, 0, 1, 0],
+};
+
+const TForm = {
+  x: [W / 2 - 2, W / 2 - 1, W / 2 - 1, W / 2],
+  y: [0, 0, 1, 0],
+};
+
 let level = parseInt((new URLSearchParams(window.location.search)).get("level"));
 
 let currentPiece;
+let gameOver = false;
 
 let frameCounter = 1; // For appling gravity. Go to the 'draw' function
 
 let stackedTiles = (function() {
   result = [];
   row = [];
-  for (let i = 0; i < H; i++) {
-    for (let j = 0; j < W; j++) {
+  for (let i = 0; i < W; i++) {
+    for (let j = 0; j < H; j++) {
       row.push(0);
     }
     result.push([row][0]); // JS is so rare... It now works.
@@ -32,7 +68,7 @@ let stackedTiles = (function() {
 // if there is some in that location. There're all 0s at the beginning.
 
 function validCoord(tileArr) {
-  return !(tileArr[0] < 0 || tileArr[0] > W || tileArr[1] < 0 || tileArr[1] > H);
+  return !(tileArr[0] < 0 || tileArr[0] >= W || tileArr[1] < 0 || tileArr[1] >= H);
 }
 
 document.addEventListener("keydown", keyDownHandler, false);
@@ -93,21 +129,13 @@ class Piece {
 
   draw() {
     for (let tile of this.tiles) {
-      ctx.beginPath();
-      ctx.rect(T * tile.x, T * tile.y, T, T);
-      ctx.fillStyle = this.color;
-      ctx.fill();
-      ctx.closePath();
+      tile.draw();
     }
   }
 
   stroke() {
     for (let tile of this.tiles) {
-      ctx.beginPath();
-      ctx.rect(T * tile.x, T * tile.y, T, T);
-      ctx.strokeStyle = this.strokeColor;
-      ctx.stroke();
-      ctx.closePath();
+      tile.stroke();
     }
   }
 
@@ -132,7 +160,7 @@ class Piece {
       Xs.push(tile[0]);
       Ys.push(tile[1]);
       try {
-        if (!validCoord(tile[0], tile[1]) || stackedTiles[tile[0]][tile[1]]) {
+        if (!validCoord(tile) || stackedTiles[tile[0]][tile[1]]) {
           this.block();
           return false;
         }
@@ -177,7 +205,7 @@ class Piece {
       Xs.push(tile[0]);
       Ys.push(tile[1]);
       try {
-        if (!validCoord(tile[0], tile[1]) || stackedTiles[tile[0]][tile[1]]) {
+        if (!validCoord(tile) || stackedTiles[tile[0]][tile[1]]) {
           if (direction == DOWN) {
             this.block();
           }
@@ -196,57 +224,131 @@ class Piece {
   }
 
   block() {
-    // Add the tiles to stackedTiles
-    console.log("Blocked!"); // For testing
+    for (let tile of this.tiles) {
+      if (stackedTiles[tile.x][tile.y] == 0) {
+        stackedTiles[tile.x][tile.y] = tile.color;
+      }
+    }
+    currentPiece = randPiece();
   }
 }
 
 class IShaped extends Piece {
   constructor() {
-    super([W / 2 - 2, W / 2 - 1, W / 2, W / 2 + 1], [0, 0, 0, 0], "#00F0F0");
+    super(IForm.x, IForm.y, "#00F0F0");
     this.rotationState = 0;
+
+    for (let x of IForm.x) {
+      for (let y of IForm.y) {
+        if (stackedTiles[x][y] != 0) {
+          this.draw();
+          this.stroke();
+          handleGameOver();
+        }
+      }
+    }
   }
 }
 
 class LShaped extends Piece {
   constructor() {
-    super([W / 2 - 2, W / 2 - 1, W / 2, W / 2 - 2], [0, 0, 0, 1], "#0000F0");
+    super(LForm.x, LForm.y, "#0000F0");
     this.rotationState = 0;
+
+    for (let x of LForm.x) {
+      for (let y of LForm.y) {
+        if (stackedTiles[x][y] != 0) {
+          this.draw();
+          this.stroke();
+          handleGameOver();
+        }
+      }
+    }
   }
 }
 
 class JShaped extends Piece {
   constructor() {
-    super([W / 2 - 2, W / 2 - 1, W / 2, W / 2], [0, 0, 0, 1], "#F0A000");
+    super(JForm.x, JForm.y, "#F0A000");
     this.rotationState = 0;
+
+    for (let x of JForm.x) {
+      for (let y of JForm.y) {
+        if (stackedTiles[x][y] != 0) {
+          this.draw();
+          this.stroke();
+          handleGameOver();
+        }
+      }
+    }
   }
 }
 
 class OShaped extends Piece {
   constructor() {
-    super([W / 2 - 1, W / 2, W / 2 - 1, W / 2], [0, 0, 1, 1], "#F0F000");
+    super(OForm.x, OForm.y, "#F0F000");
     this.rotationState = 0;
+
+    for (let x of OForm.x) {
+      for (let y of OForm.y) {
+        if (stackedTiles[x][y] != 0) {
+          this.draw();
+          this.stroke();
+          handleGameOver();
+        }
+      }
+    }
   }
 }
 
 class ZShaped extends Piece {
   constructor() {
-    super([W / 2 - 2, W / 2 - 1, W / 2 - 1, W / 2], [0, 0, 1, 1], "#F00000");
+    super(ZForm.x, ZForm.y, "#F00000");
     this.rotationState = 0;
+
+    for (let x of ZForm.x) {
+      for (let y of ZForm.y) {
+        if (stackedTiles[x][y] != 0) {
+          this.draw();
+          this.stroke();
+          handleGameOver();
+        }
+      }
+    }
   }
 }
 
 class SShaped extends Piece {
   constructor() {
-    super([W / 2 - 2, W / 2 - 1, W / 2 - 1, W / 2], [1, 0, 1, 0], "#00F000");
+    super(SForm.x, SForm.y, "#00F000");
     this.rotationState = 0;
+
+    for (let x of SForm.x) {
+      for (let y of SForm.y) {
+        if (stackedTiles[x][y] != 0) {
+          this.draw();
+          this.stroke();
+          handleGameOver();
+        }
+      }
+    }
   }
 }
 
 class TShaped extends Piece {
   constructor() {
-    super([W / 2 - 2, W / 2 - 1, W / 2 - 1, W / 2], [0, 0, 1, 0], "#A000F0");
+    super(TForm.x, TForm.y, "#A000F0");
     this.rotationState = 0;
+
+    for (let x of TForm.x) {
+      for (let y of TForm.y) {
+        if (stackedTiles[x][y] != 0) {
+          this.draw();
+          this.stroke();
+          handleGameOver();
+        }
+      }
+    }
   }
 }
 
@@ -278,20 +380,40 @@ const randPiece = function() { // Without anonymous function it doesn't work due
 }
 
 currentPiece = randPiece();
-// All the following is for testing
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Refresh canvas
-  currentPiece.draw();
-  currentPiece.stroke();
-  if (frameCounter % Math.floor(FPS / Math.sqrt(level)) == 0) {
-    currentPiece.applyGravity();
-  }
+  if (!gameOver) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Refresh canvas
+    currentPiece.draw();
+    currentPiece.stroke();
+    if (frameCounter % Math.floor(FPS / Math.sqrt(level)) == 0) {
+      currentPiece.applyGravity();
+    }
 
-  if (frameCounter == 20 * FPS) {
-    frameCounter = 1;
-  } else {
-    frameCounter++;
+    for (let i = 0; i < stackedTiles.length; i++) {
+      for (let j = 0; j < stackedTiles[i].length; j++) {
+        if (stackedTiles[i][j] != 0) {
+          let tile = new Tile(i, j, stackedTiles[i][j]);
+          tile.draw();
+          tile.stroke();
+        }
+      }
+    }
+
+    if (frameCounter == H * FPS) {
+      frameCounter = 1;
+    } else {
+      frameCounter++;
+    }
+  }
+}
+
+function handleGameOver() {
+  // Game Over stuff. For testing:
+  if (!gameOver) {
+    alert("Game Over!");
+    location.reload();
+    gameOver = true;
   }
 }
 
