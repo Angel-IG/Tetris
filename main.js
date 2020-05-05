@@ -71,6 +71,24 @@ function validCoord(tileArr) {
   return !(tileArr[0] < 0 || tileArr[0] >= W || tileArr[1] < 0 || tileArr[1] >= H);
 }
 
+function elementsEqualTo(arr, target) {
+  for (let element of arr) {
+    if (element != target) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getBoardRow(index) {
+  let result = [];
+  for (let i = 0; i < stackedTiles[0].length; i++) {
+    //console.log(stackedTiles[i]);
+    result.push(stackedTiles[i][index]);
+  }
+  return result;
+}
+
 document.addEventListener("keydown", keyDownHandler, false);
 
 function keyDownHandler(e) {
@@ -229,6 +247,26 @@ class Piece {
         stackedTiles[tile.x][tile.y] = tile.color;
       }
     }
+
+    // Checking for lines
+    let rowsToClearINDXS = [];
+    for (let i = 0; i < stackedTiles[0].length; i++) {
+      if (elementsEqualTo(getBoardRow(i), 0)) {
+        rowsToClearINDXS.push(i);
+      }
+    }
+
+    for (let index of rowsToClearINDXS) {
+      if (!index) { // If there aren't any lines to clear
+        break;
+      } else {
+        for (let i = 0; i < stackedTiles[index].length; i++) {
+          stackedTiles.getBoardRow(index)[i] = 0;
+        }
+      }
+    }
+
+    // Generating a new piece
     currentPiece = randPiece();
   }
 }
