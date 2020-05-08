@@ -68,25 +68,7 @@ let stackedTiles = (function() {
 // if there is some in that location. There're all 0s at the beginning.
 
 function validCoord(tileArr) {
-  return !(tileArr[0] < 0 || tileArr[0] >= W || tileArr[1] < 0 || tileArr[1] >= H);
-}
-
-function elementsEqualTo(arr, target) {
-  for (let element of arr) {
-    if (element != target) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function getBoardRow(index) {
-  let result = [];
-  for (let i = 0; i < stackedTiles[0].length; i++) {
-    //console.log(stackedTiles[i]);
-    result.push(stackedTiles[i][index]);
-  }
-  return result;
+  return !(tileArr[0] < 0 || tileArr[0] >= W || tileArr[1] >= H);
 }
 
 document.addEventListener("keydown", keyDownHandler, false);
@@ -95,7 +77,7 @@ function keyDownHandler(e) {
   if (currentPiece) {
     // Maybe the following will be better with 'switch'.
     if (e.keyCode == 32) { // SPACE
-      // Rotation
+      currentPiece.rotate();
     } else if (e.keyCode == 40) { // Down
       currentPiece.move(DOWN);
     } else if (e.keyCode == 39) { // Right
@@ -248,33 +230,80 @@ class Piece {
       }
     }
 
-    // Checking for lines
-    let rowsToClearINDXS = [];
-    for (let i = 0; i < stackedTiles[0].length; i++) {
-      if (elementsEqualTo(getBoardRow(i), 0)) {
-        rowsToClearINDXS.push(i);
-      }
-    }
-
-    for (let index of rowsToClearINDXS) {
-      if (!index) { // If there aren't any lines to clear
-        break;
-      } else {
-        for (let i = 0; i < stackedTiles[index].length; i++) {
-          stackedTiles.getBoardRow(index)[i] = 0;
-        }
-      }
-    }
+    // TODO: clear lines if completed
 
     // Generating a new piece
     currentPiece = randPiece();
+  }
+
+  rotate() {
+    // The same return values as applyGravity()
+    if (this.rotationState == undefined || this.MAXROTINDX == undefined || this.ROTATIONS == undefined) { // If rotation is not defined for currentPiece
+      console.error("ERROR: you must define rotation for " + currentPiece.constructor.name);
+      return false;
+    } else {
+      let NEXTROTSTATE; // const requires inizilation
+      if (this.MAXROTINDX != 0) {
+        NEXTROTSTATE = (this.rotationState + 1) % this.MAXROTINDX;
+      } else {
+        // If there's only one rotation state, we do nothing:
+        return true;
+      }
+
+      let prevTilesArr = [];
+      let newTilesArr = [];
+      for (let tile of this.tiles) {
+        prevTilesArr.push(tile.toArray());
+      }
+
+      for (let i = 0; i < prevTilesArr.length; i++) {
+        newTilesArr.push([prevTilesArr[i][0] + this.ROTATIONS[NEXTROTSTATE][0][i],
+          prevTilesArr[i][1] + this.ROTATIONS[NEXTROTSTATE][1][i]
+        ]);
+      }
+
+      let Xs = []; // Used later
+      let Ys = []; // Used later
+
+      for (let tile of newTilesArr) {
+        Xs.push(tile[0]);
+        Ys.push(tile[1]);
+        try {
+          if (!validCoord(tile) || stackedTiles[tile[0]][tile[1]]) {
+            return false;
+          }
+        } catch (e) {
+          return false;
+        }
+      }
+
+      this.tiles = [];
+      for (let i = 0; i < Xs.length; i++) {
+        this.tiles.push(new Tile(Xs[i], Ys[i], this.color));
+      }
+
+      this.rotationState = NEXTROTSTATE;
+      return true;
+    }
   }
 }
 
 class IShaped extends Piece {
   constructor() {
     super(IForm.x, IForm.y, "#00F0F0");
+
     this.rotationState = 0;
+    this.MAXROTINDX = 2;
+    this.ROTATIONS = [
+      [
+        [-2, -1, 0, 1],
+        [-2, -1, 0, 1]
+      ],
+      [
+        [2, 1, 0, -1],
+        [2, 1, 0, -1]
+      ]
+    ];
 
     for (let x of IForm.x) {
       for (let y of IForm.y) {
@@ -291,7 +320,9 @@ class IShaped extends Piece {
 class LShaped extends Piece {
   constructor() {
     super(LForm.x, LForm.y, "#0000F0");
+
     this.rotationState = 0;
+    this.MAXROTINDX = 4;
 
     for (let x of LForm.x) {
       for (let y of LForm.y) {
@@ -308,7 +339,9 @@ class LShaped extends Piece {
 class JShaped extends Piece {
   constructor() {
     super(JForm.x, JForm.y, "#F0A000");
+
     this.rotationState = 0;
+    this.MAXROTINDX = 4;
 
     for (let x of JForm.x) {
       for (let y of JForm.y) {
@@ -325,7 +358,15 @@ class JShaped extends Piece {
 class OShaped extends Piece {
   constructor() {
     super(OForm.x, OForm.y, "#F0F000");
+
     this.rotationState = 0;
+    this.MAXROTINDX = 1;
+    this.ROTATIONS = [
+      [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+      ]
+    ];
 
     for (let x of OForm.x) {
       for (let y of OForm.y) {
@@ -342,7 +383,9 @@ class OShaped extends Piece {
 class ZShaped extends Piece {
   constructor() {
     super(ZForm.x, ZForm.y, "#F00000");
+
     this.rotationState = 0;
+    this.MAXROTINDX = 2;
 
     for (let x of ZForm.x) {
       for (let y of ZForm.y) {
@@ -359,7 +402,9 @@ class ZShaped extends Piece {
 class SShaped extends Piece {
   constructor() {
     super(SForm.x, SForm.y, "#00F000");
+
     this.rotationState = 0;
+    this.MAXROTINDX = 2;
 
     for (let x of SForm.x) {
       for (let y of SForm.y) {
@@ -376,7 +421,9 @@ class SShaped extends Piece {
 class TShaped extends Piece {
   constructor() {
     super(TForm.x, TForm.y, "#A000F0");
+
     this.rotationState = 0;
+    this.MAXROTINDX = 4;
 
     for (let x of TForm.x) {
       for (let y of TForm.y) {
