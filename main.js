@@ -386,6 +386,16 @@ class ZShaped extends Piece {
 
     this.rotationState = 0;
     this.MAXROTINDX = 2;
+    this.ROTATIONS = [
+      [
+        [-2, -1, 0, 1],
+        [1, 0, 1, 0]
+      ],
+      [
+        [2, 1, 0, -1],
+        [-1, 0, -1, 0]
+      ]
+    ];
 
     for (let x of ZForm.x) {
       for (let y of ZForm.y) {
@@ -405,6 +415,16 @@ class SShaped extends Piece {
 
     this.rotationState = 0;
     this.MAXROTINDX = 2;
+    this.ROTATIONS = [
+      [
+        [-2, 0, -1, 1],
+        [0, 0, 1, 1]
+      ],
+      [
+        [2, 0, 1, -1],
+        [0, 0, -1, -1]
+      ]
+    ];
 
     for (let x of SForm.x) {
       for (let y of SForm.y) {
