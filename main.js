@@ -444,6 +444,24 @@ class TShaped extends Piece {
 
     this.rotationState = 0;
     this.MAXROTINDX = 4;
+    this.ROTATIONS = [
+      [
+        [-1, 0, 1, 1],
+        [1, 0, 1, -1]
+      ],
+      [
+        [1, 0, 1, -1],
+        [1, 0, -1, -1]
+      ],
+      [
+        [1, 0, -1, -1],
+        [-1, 0, -1, 1]
+      ],
+      [
+        [-1, 0, -1, 1],
+        [-1, 0, 1, 1]
+      ]
+    ];
 
     for (let x of TForm.x) {
       for (let y of TForm.y) {
