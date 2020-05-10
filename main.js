@@ -319,10 +319,28 @@ class IShaped extends Piece {
 
 class LShaped extends Piece {
   constructor() {
-    super(LForm.x, LForm.y, "#0000F0");
+    super(LForm.x, LForm.y, "#F0A000");
 
     this.rotationState = 0;
     this.MAXROTINDX = 4;
+    this.ROTATIONS = [
+      [
+        [-1, 0, 1, 0],
+        [1, 0, -1, 2]
+      ],
+      [
+        [1, 0, -1, 2],
+        [1, 0, -1, 0]
+      ],
+      [
+        [1, 0, -1, 0],
+        [-1, 0, 1, -2]
+      ],
+      [
+        [-1, 0, 1, -2],
+        [-1, 0, 1, 0]
+      ]
+    ];
 
     for (let x of LForm.x) {
       for (let y of LForm.y) {
@@ -338,10 +356,28 @@ class LShaped extends Piece {
 
 class JShaped extends Piece {
   constructor() {
-    super(JForm.x, JForm.y, "#F0A000");
+    super(JForm.x, JForm.y, "#0000F0");
 
     this.rotationState = 0;
     this.MAXROTINDX = 4;
+    this.ROTATIONS = [
+      [
+        [-1, 0, 1, 2],
+        [1, 0, -1, 0]
+      ],
+      [
+        [1, 0, -1, 0],
+        [1, 0, -1, -2]
+      ],
+      [
+        [1, 0, -1, -2],
+        [-1, 0, 1, 0]
+      ],
+      [
+        [-1, 0, 1, 0],
+        [-1, 0, 1, 2]
+      ]
+    ];
 
     for (let x of JForm.x) {
       for (let y of JForm.y) {
