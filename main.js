@@ -46,7 +46,9 @@ const TForm = {
   y: [0, 0, 1, 0],
 };
 
-let level = parseInt((new URLSearchParams(window.location.search)).get("level"));
+const initLevel = parseInt((new URLSearchParams(window.location.search)).get("level"));
+let currentLevel = initLevel;
+let lines = 0;
 
 let currentPiece;
 let gameOver = false;
@@ -66,6 +68,21 @@ let stackedTiles = (function() {
   return result;
 })(); // It's actually a 2d-array with 0s if there's no tile or the Tile object
 // if there is some in that location. There're all 0s at the beginning.
+
+function isLineCompleted(rowIndx) {
+  let row = [];
+  for (let i = 0; i < stackedTiles.length; i++) {
+    row.push(stackedTiles[i][rowIndx]);
+  }
+
+  for (let element of row) {
+    if (element == 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 function validCoord(tileArr) {
   return !(tileArr[0] < 0 || tileArr[0] >= W || tileArr[1] >= H);
@@ -230,7 +247,19 @@ class Piece {
       }
     }
 
-    // TODO: clear lines if completed
+    // Clear lines if completed
+    for (let i = stackedTiles[0].length; i >= 0; i--) {
+      if (isLineCompleted(i)) {
+        for (let j = 0; j < stackedTiles.length; j++) {
+          stackedTiles[j][i] = 0;
+        }
+
+        lines++;
+        if (lines % 10 == 0 && lines != 0) {
+          currentLevel++;
+        }
+      }
+    }
 
     // Generating a new piece
     currentPiece = randPiece();
@@ -545,7 +574,7 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Refresh canvas
     currentPiece.draw();
     currentPiece.stroke();
-    if (frameCounter % Math.floor(FPS / Math.sqrt(level)) == 0) {
+    if (frameCounter % Math.floor(FPS / Math.sqrt(currentLevel)) == 0) {
       currentPiece.applyGravity();
     }
 
@@ -570,7 +599,7 @@ function draw() {
 function handleGameOver() {
   // Game Over stuff. For testing:
   if (!gameOver) {
-    alert("Game Over!");
+    alert(`Game Over! Lines: ${lines}. Initial level: ${initLevel}. Final level: ${currentLevel}. `);
     location.reload();
     gameOver = true;
   }
