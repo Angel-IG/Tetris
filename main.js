@@ -46,9 +46,28 @@ const TForm = {
   y: [0, 0, 1, 0],
 };
 
-const initLevel = parseInt((new URLSearchParams(window.location.search)).get("level"));
+const urlParser = new URLSearchParams(window.location.search); // To parse arguments
+const initLevel = parseInt(urlParser.get("level"));
 let currentLevel = initLevel;
 let lines = 0;
+
+const floatingBlocks = urlParser.get("floatingblocks") !== null;
+/*
+This is part of a secret mode: the Floating Blocks Mode.
+Once you make a line in this variant, the line clears but
+the blocks above it remain where they are.
+
+Turns out that this is kind of interesting to play, so I've
+made a secret mode to play this way. To play it you have to
+add "&floatingblocks" (without the qoutes) to the end of the
+URL of the game page.
+
+Now I'll explain how the line before this comment block works.
+urlParser.get("floatingblocks") will return null if there's not
+URL query parameter named "floatingblocks", so by using !==, I
+make 'floatingBlocks' true if there's "floatingblocks" in the URL
+and false if there's not.
+*/
 
 let currentPiece;
 let gameOver = false;
@@ -76,7 +95,7 @@ function isLineCompleted(rowIndx) {
   }
 
   for (let element of row) {
-    if (element == 0) {
+    if (element === 0) {
       return false;
     }
   }
@@ -93,13 +112,13 @@ document.addEventListener("keydown", keyDownHandler, false);
 function keyDownHandler(e) {
   if (currentPiece) {
     // Maybe the following will be better with 'switch'.
-    if (e.keyCode == 32) { // SPACE
+    if (e.keyCode === 32) { // SPACE
       currentPiece.rotate();
-    } else if (e.keyCode == 40) { // Down
+    } else if (e.keyCode === 40) { // Down
       currentPiece.move(DOWN);
-    } else if (e.keyCode == 39) { // Right
+    } else if (e.keyCode === 39) { // Right
       currentPiece.move(RIGHT);
-    } else if (e.keyCode == 37) { // Left
+    } else if (e.keyCode === 37) { // Left
       currentPiece.move(LEFT);
     }
   }
@@ -223,7 +242,7 @@ class Piece {
       Ys.push(tile[1]);
       try {
         if (!validCoord(tile) || stackedTiles[tile[0]][tile[1]]) {
-          if (direction == DOWN) {
+          if (direction === DOWN) {
             this.block();
           }
           return false;
@@ -242,7 +261,7 @@ class Piece {
 
   block() {
     for (let tile of this.tiles) {
-      if (stackedTiles[tile.x][tile.y] == 0) {
+      if (stackedTiles[tile.x][tile.y] === 0) {
         stackedTiles[tile.x][tile.y] = tile.color;
       }
     }
@@ -255,7 +274,7 @@ class Piece {
         }
 
         lines++;
-        if (lines % 10 == 0 && lines != 0) {
+        if (lines % 10 === 0 && lines !== 0) {
           currentLevel++;
         }
       }
@@ -267,12 +286,12 @@ class Piece {
 
   rotate() {
     // The same return values as applyGravity()
-    if (this.rotationState == undefined || this.MAXROTINDX == undefined || this.ROTATIONS == undefined) { // If rotation is not defined for currentPiece
+    if (this.rotationState === undefined || this.MAXROTINDX === undefined || this.ROTATIONS === undefined) { // If rotation is not defined for currentPiece
       console.error("ERROR: you must define rotation for " + currentPiece.constructor.name);
       return false;
     } else {
       let NEXTROTSTATE; // const requires inizilation
-      if (this.MAXROTINDX != 0) {
+      if (this.MAXROTINDX !== 0) {
         NEXTROTSTATE = (this.rotationState + 1) % this.MAXROTINDX;
       } else {
         // If there's only one rotation state, we do nothing:
@@ -336,7 +355,7 @@ class IShaped extends Piece {
 
     for (let x of IForm.x) {
       for (let y of IForm.y) {
-        if (stackedTiles[x][y] != 0) {
+        if (stackedTiles[x][y] !== 0) {
           this.draw();
           this.stroke();
           handleGameOver();
@@ -373,7 +392,7 @@ class LShaped extends Piece {
 
     for (let x of LForm.x) {
       for (let y of LForm.y) {
-        if (stackedTiles[x][y] != 0) {
+        if (stackedTiles[x][y] !== 0) {
           this.draw();
           this.stroke();
           handleGameOver();
@@ -410,7 +429,7 @@ class JShaped extends Piece {
 
     for (let x of JForm.x) {
       for (let y of JForm.y) {
-        if (stackedTiles[x][y] != 0) {
+        if (stackedTiles[x][y] !== 0) {
           this.draw();
           this.stroke();
           handleGameOver();
@@ -435,7 +454,7 @@ class OShaped extends Piece {
 
     for (let x of OForm.x) {
       for (let y of OForm.y) {
-        if (stackedTiles[x][y] != 0) {
+        if (stackedTiles[x][y] !== 0) {
           this.draw();
           this.stroke();
           handleGameOver();
@@ -464,7 +483,7 @@ class ZShaped extends Piece {
 
     for (let x of ZForm.x) {
       for (let y of ZForm.y) {
-        if (stackedTiles[x][y] != 0) {
+        if (stackedTiles[x][y] !== 0) {
           this.draw();
           this.stroke();
           handleGameOver();
@@ -493,7 +512,7 @@ class SShaped extends Piece {
 
     for (let x of SForm.x) {
       for (let y of SForm.y) {
-        if (stackedTiles[x][y] != 0) {
+        if (stackedTiles[x][y] !== 0) {
           this.draw();
           this.stroke();
           handleGameOver();
@@ -530,7 +549,7 @@ class TShaped extends Piece {
 
     for (let x of TForm.x) {
       for (let y of TForm.y) {
-        if (stackedTiles[x][y] != 0) {
+        if (stackedTiles[x][y] !== 0) {
           this.draw();
           this.stroke();
           handleGameOver();
@@ -574,13 +593,13 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Refresh canvas
     currentPiece.draw();
     currentPiece.stroke();
-    if (frameCounter % Math.floor(FPS / Math.sqrt(currentLevel)) == 0) {
+    if (frameCounter % Math.floor(FPS / Math.sqrt(currentLevel)) === 0) {
       currentPiece.applyGravity();
     }
 
     for (let i = 0; i < stackedTiles.length; i++) {
       for (let j = 0; j < stackedTiles[i].length; j++) {
-        if (stackedTiles[i][j] != 0) {
+        if (stackedTiles[i][j] !== 0) {
           let tile = new Tile(i, j, stackedTiles[i][j]);
           tile.draw();
           tile.stroke();
@@ -588,7 +607,7 @@ function draw() {
       }
     }
 
-    if (frameCounter == H * FPS) {
+    if (frameCounter === H * FPS) {
       frameCounter = 1;
     } else {
       frameCounter++;
