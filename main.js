@@ -267,10 +267,29 @@ class Piece {
     }
 
     // Clear lines if completed
-    for (let i = stackedTiles[0].length; i >= 0; i--) {
+    for (let i = stackedTiles[0].length - 1; i >= 0; i--) {
       if (isLineCompleted(i)) {
-        for (let j = 0; j < stackedTiles.length; j++) {
-          stackedTiles[j][i] = 0;
+        if (floatingBlocks) {
+          // Secret mode. Add "&floatingblocks" (without the qoutes)
+          // to the end of the game URL to play it.
+          for (let j = 0; j < stackedTiles.length; j++) {
+            stackedTiles[j][i] = 0;
+          }
+        } else {
+          // Gravity
+          for (let z = i; z >= 0; z--) {
+            for (let j = 0; j < stackedTiles.length; j++) {
+              if (z === 0) {
+                stackedTiles[j][z] = 0; // The first row should be empty after line-clearing
+              } else {
+                stackedTiles[j][z] = stackedTiles[j][z - 1]; // The previous line goes down to this one
+              }
+            }
+          }
+
+          if (!floatingBlocks) {
+            i++; // We check this line again because it's changed (the previous line went down to this one)
+          }
         }
 
         lines++;
@@ -290,7 +309,7 @@ class Piece {
       console.error("ERROR: you must define rotation for " + currentPiece.constructor.name);
       return false;
     } else {
-      let NEXTROTSTATE; // const requires inizilation
+      let NEXTROTSTATE; // const requires initialization
       if (this.MAXROTINDX !== 0) {
         NEXTROTSTATE = (this.rotationState + 1) % this.MAXROTINDX;
       } else {
